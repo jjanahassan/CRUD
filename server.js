@@ -189,8 +189,9 @@ app.post("/tasks", (req,res) => {
         });
     }
 
-    const newTask={id: tasks.length+1, title, done: false};
-    tasks.push(newTask);
+    const insert= db.prepare(`insert into tasks (title, done) values(?, ?)`);
+    const result= insert.run(title.trim(), 0);
+    const newTask= db.prepare(`select * from tasks where id= ?`).get(result.lastInsertRowid);
 
     res.status(201).json(newTask);
 
