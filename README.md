@@ -1,10 +1,10 @@
-# Task API
+# Task API - Database Edition
 
-A simple RESTful CRUD API for managing tasks, built using **Node.js**, **Express.js**, and documented with **Swagger UI**.
+A simple RESTful CRUD API for managing tasks, built using **Node.js**, **Express.js**, **SQLite**, and documented with **Swagger UI**.
 
 ## 📋 Overview
 
-Task API is a lightweight backend application that demonstrates a complete CRUD (Create, Read, Update, Delete) system using Express.js.
+Task API is a lightweight backend application that demonstrates a complete CRUD (Create, Read, Update, Delete) system with **persistent database storage**. Unlike the in-memory version, your data survives server restarts because it is stored in a SQLite database.
 
 This project was developed as a learning project to practice:
 
@@ -13,15 +13,36 @@ This project was developed as a learning project to practice:
 - Creating API documentation using Swagger
 - Structuring backend applications with Express.js
 - Working with JSON-based request and response handling
+- SQLite database integration for persistent storage
+- Parameterized SQL queries for security
+- Exploring databases with DB Browser for SQLite
+
+---
 
 ## ✨ Features
 
 - ✅ Complete CRUD operations for tasks
 - ✅ RESTful API architecture
+- ✅ Persistent SQLite database storage
+- ✅ Automatic database and table creation
+- ✅ Automatic seeding of sample tasks
+- ✅ Parameterized SQL queries to prevent SQL injection
 - ✅ Interactive Swagger UI documentation
 - ✅ JSON request and response format
 - ✅ Proper HTTP status codes
-- ✅ In-memory data storage (no database required)
+
+---
+
+## 🗄️ Why SQLite?
+
+SQLite was chosen because it is:
+
+- **Serverless** – No database server installation required
+- **Single-file database** – Everything is stored in one portable file (`tasks.db`)
+- **Zero configuration** – Ready to use immediately
+- **Persistent** – Data survives server restarts
+- **Lightweight** – Ideal for learning projects and small applications
+- **Easy to integrate** using the `better-sqlite3` package
 
 ---
 
@@ -32,9 +53,9 @@ This project was developed as a learning project to practice:
 Before running the project, make sure you have installed:
 
 - Node.js (v14 or higher)
-- npm (included with Node.js)
+- npm (comes with Node.js)
 
-Check your installed versions:
+Verify the installation:
 
 ```bash
 node -v
@@ -43,7 +64,7 @@ npm -v
 
 ---
 
-# 📥 Installation
+## 📥 Installation
 
 Clone the repository:
 
@@ -51,13 +72,13 @@ Clone the repository:
 git clone https://github.com/jjanahassan/CRUD.git
 ```
 
-Navigate to the project folder:
+Navigate to the project directory:
 
 ```bash
 cd CRUDAPI-node
 ```
 
-Install dependencies:
+Install the project dependencies:
 
 ```bash
 npm install
@@ -73,67 +94,93 @@ Start the application:
 node server.js
 ```
 
-The server will run on:
+The server will run at:
 
 ```
 http://localhost:3000
 ```
 
-You should see:
+On the first run you should see something similar to:
 
 ```
+Database seeded.
+Database connected successfully.
 Server running on http://localhost:3000
 Swagger UI available at http://localhost:3000/docs
 ```
+
+That's it! The application automatically creates the SQLite database if it does not already exist.
+
+---
+
+## 🆕 First-Time Setup
+
+When the application starts for the first time, it automatically:
+
+- Creates the `tasks.db` database
+- Creates the `tasks` table
+- Seeds three example tasks (only if the table is empty)
+
+No manual database setup is required.
 
 ---
 
 # 📚 Swagger API Documentation
 
-Swagger UI provides an interactive interface for testing all API endpoints.
+Swagger UI provides interactive API documentation where every endpoint can be tested directly.
 
-Open your browser and visit:
+Open:
 
 ```
 http://localhost:3000/docs
 ```
 
-You can test requests directly using the **"Try it out"** button.
+Click **Try it out** to send requests directly from your browser.
 
 ---
 
 # 🔗 API Endpoints
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+|---------|----------|-------------|
 | GET | `/` | Returns API information |
 | GET | `/hello` | Test endpoint |
-| GET | `/health` | Checks API status |
-| GET | `/tasks` | Retrieves all tasks |
-| GET | `/tasks/:id` | Retrieves a task by ID |
-| POST | `/tasks` | Creates a new task |
-| PUT | `/tasks/:id` | Updates an existing task |
-| DELETE | `/tasks/:id` | Deletes a task |
+| GET | `/health` | Health check |
+| GET | `/tasks` | Retrieve all tasks |
+| GET | `/tasks/:id` | Retrieve a task by ID |
+| POST | `/tasks` | Create a new task |
+| PUT | `/tasks/:id` | Update a task |
+| DELETE | `/tasks/:id` | Delete a task |
 
 ---
 
-# 📦 Task Schema
+# 📦 Database Schema
 
-A task object follows this structure:
+The application uses a single table called **tasks**.
+
+| Column | Type | Description |
+|---------|------|-------------|
+| id | INTEGER PRIMARY KEY AUTOINCREMENT | Auto-generated task ID |
+| title | TEXT NOT NULL | Task title |
+| done | INTEGER DEFAULT 0 | Task status (0 = pending, 1 = completed) |
+
+---
+
+## API Response Format
 
 ```json
 {
   "id": 1,
   "title": "Complete backend documentation",
-  "done": false
+  "done": 0
 }
 ```
 
 | Field | Type | Description |
 |------|------|-------------|
-| id | Integer | Unique identifier generated automatically |
-| title | String | Task description (required) |
-| done | Boolean | Task completion status |
+| id | Integer | Auto-generated unique identifier |
+| title | String | Task description |
+| done | Integer | 0 = Pending, 1 = Completed |
 
 ---
 
@@ -146,7 +193,7 @@ A task object follows this structure:
 ```bash
 curl -X POST http://localhost:3000/tasks \
 -H "Content-Type: application/json" \
--d '{"title":"Learn Swagger"}'
+-d '{"title":"Learn SQLite"}'
 ```
 
 ### Response
@@ -154,8 +201,8 @@ curl -X POST http://localhost:3000/tasks \
 ```json
 {
   "id": 4,
-  "title": "Learn Swagger",
-  "done": false
+  "title": "Learn SQLite",
+  "done": 0
 }
 ```
 
@@ -177,13 +224,18 @@ curl http://localhost:3000/tasks
 [
   {
     "id": 1,
-    "title": "Complete backend documentation",
-    "done": false
+    "title": "Finish stage 0",
+    "done": 0
   },
   {
     "id": 2,
-    "title": "Test API endpoints",
-    "done": true
+    "title": "Run my program",
+    "done": 1
+  },
+  {
+    "id": 3,
+    "title": "Connect to database",
+    "done": 0
   }
 ]
 ```
@@ -192,7 +244,7 @@ curl http://localhost:3000/tasks
 
 ---
 
-## Get Task By ID
+## Get a Task by ID
 
 ### Request
 
@@ -205,8 +257,8 @@ curl http://localhost:3000/tasks/1
 ```json
 {
   "id": 1,
-  "title": "Complete backend documentation",
-  "done": false
+  "title": "Finish stage 0",
+  "done": 0
 }
 ```
 
@@ -231,7 +283,7 @@ If the task does not exist:
 ```bash
 curl -X PUT http://localhost:3000/tasks/1 \
 -H "Content-Type: application/json" \
--d '{"title":"Updated task","done":true}'
+-d '{"title":"Updated task","done":1}'
 ```
 
 ### Response
@@ -240,7 +292,7 @@ curl -X PUT http://localhost:3000/tasks/1 \
 {
   "id": 1,
   "title": "Updated task",
-  "done": true
+  "done": 1
 }
 ```
 
@@ -253,10 +305,10 @@ curl -X PUT http://localhost:3000/tasks/1 \
 ### Request
 
 ```bash
-curl -X DELETE http://localhost:3000/tasks/1
+curl -X DELETE http://localhost:3000/tasks/4
 ```
 
-Response:
+### Response
 
 ```
 No Content
@@ -268,54 +320,116 @@ No Content
 
 # 🧪 CRUD Testing Flow
 
-A complete CRUD cycle can be tested as follows:
-
 ```bash
-# 1. Create a task
-POST /tasks
+# Create a task
+curl -X POST http://localhost:3000/tasks \
+-H "Content-Type: application/json" \
+-d '{"title":"Test CRUD"}'
 
-# 2. Retrieve all tasks
-GET /tasks
+# Retrieve all tasks
+curl http://localhost:3000/tasks
 
-# 3. Update a task
-PUT /tasks/:id
+# Update the task
+curl -X PUT http://localhost:3000/tasks/4 \
+-H "Content-Type: application/json" \
+-d '{"done":1}'
 
-# 4. Retrieve the updated task
-GET /tasks/:id
+# Retrieve the updated task
+curl http://localhost:3000/tasks/4
 
-# 5. Delete the task
-DELETE /tasks/:id
+# Delete the task
+curl -X DELETE http://localhost:3000/tasks/4
 
-# 6. Confirm deletion
-GET /tasks
+# Confirm deletion
+curl http://localhost:3000/tasks
 ```
 
 ---
-# 📸 Swagger UI Preview
 
-![Swagger UI](image.png)
+# 🗄️ Exploring the Database
+
+You can inspect the database using **DB Browser for SQLite**.
+
+Steps:
+
+1. Open **DB Browser for SQLite**
+2. Open the `tasks.db` file
+3. Browse the data
+4. Execute SQL queries
+5. Save changes directly to the database
+
+Since both the API and DB Browser use the same database file, changes made in either place are immediately reflected in the other.
+
+---
+
+## Example SQL Queries
+
+Retrieve all tasks:
+
+```sql
+SELECT * FROM tasks;
+```
+
+Retrieve completed tasks:
+
+```sql
+SELECT * FROM tasks WHERE done = 1;
+```
+
+Count all tasks:
+
+```sql
+SELECT COUNT(*) FROM tasks;
+```
+
+Find tasks containing the word "stage":
+
+```sql
+SELECT * FROM tasks
+WHERE title LIKE '%stage%';
+```
+
+---
+
+# 📸 Screenshots
+
+## Swagger UI
+
+[Swagger UI](swagger-ui.png)
+
+## DB Browser
+
+[DB Browser](db-browser.png)
+
+---
 
 # 🛠️ Technology Stack
 
 | Technology | Purpose |
-|-----------|---------|
+|------------|---------|
 | Node.js | JavaScript runtime |
 | Express.js | Backend web framework |
+| SQLite | Embedded database |
+| better-sqlite3 | SQLite driver |
 | Swagger UI Express | Interactive API documentation |
-| Swagger JSDoc | Generates OpenAPI documentation |
+| Swagger JSDoc | OpenAPI specification generation |
 
 ---
 
 # 📁 Project Structure
 
-```
+```text
 CRUDAPI-node/
 │
-├── server.js              # Main Express application
-├── package.json           # Project dependencies
-├── package-lock.json      # Dependency versions
-├── README.md              # Project documentation
-└── screenshots/           # Swagger screenshots
+├── server.js
+├── db.js
+├── tasks.db
+├── package.json
+├── package-lock.json
+├── README.md
+├── .gitignore
+├── swagger-screenshot.png
+└── db-browser-screenshot.png
 ```
 
 ---
@@ -324,25 +438,39 @@ CRUDAPI-node/
 
 | Status Code | Description |
 |-------------|-------------|
-| 200 OK | Request succeeded |
+| 200 OK | Request successful |
 | 201 Created | Resource created successfully |
-| 204 No Content | Request succeeded without response body |
-| 400 Bad Request | Invalid input |
-| 404 Not Found | Resource does not exist |
+| 204 No Content | Successful request with no response body |
+| 400 Bad Request | Invalid request |
+| 404 Not Found | Resource not found |
+| 500 Internal Server Error | Internal server error |
 
 ---
 
 # 🚧 Future Improvements
 
-Possible future enhancements:
+Possible future enhancements include:
 
-- ☐ Add database integration (MongoDB/PostgreSQL)
-- ☐ Add filtering and searching
-- ☐ Add authentication and authorization
-- ☐ Add environment variable configuration
-- ☐ Add unit and integration tests
-- ☐ Add request validation
-- ☐ Add API rate limiting
+- ☐ Filter tasks (`GET /tasks?done=true`)
+- ☐ Search tasks (`GET /tasks?search=milk`)
+- ☐ Sort tasks (`GET /tasks?sort=title`)
+- ☐ Add timestamps (`created_at`, `updated_at`)
+- ☐ Environment variable configuration
+- ☐ Unit and integration testing
+- ☐ Request validation middleware
+- ☐ Authentication and authorization
+- ☐ API rate limiting
+
+---
+
+# 📖 Resources
+
+- Express.js Documentation
+- SQLite Documentation
+- better-sqlite3 Documentation
+- Swagger UI Documentation
+- DB Browser for SQLite
+- HTTP Status Codes Reference
 
 ---
 
@@ -350,8 +478,8 @@ Possible future enhancements:
 
 **Jana Abdelwahab Hassan**
 
-GitHub: [@jjanahassan](https://github.com/jjanahassan)
+GitHub: https://github.com/jjanahassan
 
 ---
 
-Built as part of a Backend Development Learning Journey 🚀
+Built as part of the **FlyRank Backend Development Internship** 🚀
