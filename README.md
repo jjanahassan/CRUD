@@ -395,11 +395,11 @@ WHERE title LIKE '%stage%';
 
 ## Swagger UI
 
-![Swagger UI](swagger-ui.png)
+[Swagger UI](swagger-ui.png)
 
 ## DB Browser
 
-![DB Browser](db-browser.png)
+[DB Browser](db-browser.png)
 
 ---
 
