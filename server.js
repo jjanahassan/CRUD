@@ -238,7 +238,7 @@ app.post("/tasks", (req,res) => {
 
 app.put("/tasks/:id", (req,res) => {
     const id= Number(req.params.id);
-    const task= tasks.find(task => task.id===id);
+    const task= db.prepare('select * from tasks where id = ?').get(id);
 
     if (!task) {
         return res.status(404).json({
@@ -253,19 +253,27 @@ app.put("/tasks/:id", (req,res) => {
         });
     }
 
-    if (title.trim() === "") {
-        return res.status(400).json({
-                error: "Title cannot be empty"
-            });
-    }
+    if (title !== undefined) {
+            if (title.trim() === "") {
+                return res.status(400).json({
+                    error: "Title cannot be empty"
+                });
+            }
+            db.prepare('update tasks set title = ? where id = ?').run(title.trim(), id);
+        }
 
-    task.title= title.trim();
 
-    if (done!== undefined){
-        task.done=done;
-    }
+    if (done !== undefined) {
+            if (typeof done !== 'boolean') {
+                return res.status(400).json({
+                    error: "Done must be a boolean (true/false)"
+                });
+            }
+            db.prepare('update tasks set done = ? where id = ?').run(done ? 1 : 0, id);
+        }
 
-    res.json(task);
+    const updatedTask= db.prepare("select * from tasks where id ==?").get(id);
+    res.json(updatedTask);
 });
 
 /**
@@ -290,15 +298,16 @@ app.put("/tasks/:id", (req,res) => {
 
 app.delete("/tasks/:id", (req,res) => {
     const id= Number(req.params.id);
-    const taskIndex= tasks.findIndex(task => task.id ===id);
+    const task= db.prepare("select * from tasks where id = ?").get(id);
  
-     if (taskIndex === -1) {
+     if (!task) {
         return res.status(404).json({
             error: `Task ${id} not found`
         });
     }
 
-    tasks.splice(taskIndex, 1);
+    const deleteQuery = db.prepare("delete from tasks where id = ?");
+    deleteQuery.run(id);
     res.status(204).send();
 
 });
